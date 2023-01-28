@@ -1,27 +1,32 @@
 import cv2
 import numpy as np
 import time
+import sys
 
-def startWebcam():
-    capture = cv2.VideoCapture(2)
+def start_webcam():
+    capture = cv2.VideoCapture(0)
     return capture
 
-def drawShapes(capture):
+def draw_frames(capture, draw_border):
     while (True):
         result, frame = capture.read()
-        frame = getShapes(frame)
+        frame = draw_shapes(frame, draw_border)
         cv2.imshow('frame', frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-def getShapes(frame):
+def draw_shapes(frame, draw_border):
 
     results = []
 
     # converting image into grayscale image
     rendered_image = frame[209:370, 72:508]
     gray = cv2.cvtColor(rendered_image, cv2.COLOR_BGR2GRAY)
+
+    # Draw bounding rectangle.
+    if draw_border == "True":
+        cv2.rectangle(frame, (72, 209), (508, 370), (252, 186, 3), 10)
 
     # setting threshold of gray image
     _, threshold = cv2.threshold(gray, 70, 1, cv2.THRESH_BINARY)
@@ -60,7 +65,6 @@ def getShapes(frame):
         number_x = int(x + (w / 2)) - int(number_width / 2)
         number_y = int(y + (h / 2)) - int(number_height / 2)
 
-
         try:
             if 100 > w > 15:
                 if 100 > h > 15:
@@ -89,11 +93,13 @@ def getShapes(frame):
 
     return frame
 
-def closeStreams(capture):
+def close_streams(capture):
     capture.release()
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    capture = startWebcam()
-    drawShapes(capture)
-    closeStreams(capture)
+    draw_border = sys.argv[1]
+
+    capture = start_webcam() # Start the webcam
+    draw_frames(capture, draw_border) # Render the frame, including drawing the shapes detected
+    close_streams(capture) # Close the stream once finished
